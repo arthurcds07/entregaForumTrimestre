@@ -22,20 +22,29 @@ const HomeScreen = ({ navigation }) => {
   const [userLikes, setUserLikes] = useState({});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [newPostImageUri, setNewPostImageUri] = useState(null); // <-- Novo: URI da imagem do novo post
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadUserId = async () => {
+    const loadUserIdAndData = async () => {
       try {
         const userDataString = await AsyncStorage.getItem('userData');
         if (userDataString) {
           const userData = JSON.parse(userDataString);
           setCurrentUserId(userData.id);
         }
+        // Buscar dados completos do usuário logado
+        const userToken = await AsyncStorage.getItem('userToken');
+        if (userToken) {
+          const userResponse = await api.get('/users/me', {
+            headers: { Authorization: `Bearer ${userToken}` }
+          });
+          setUser(userResponse.data);
+        }
       } catch (error) {
-        console.error('Erro ao carregar dados do usuário do AsyncStorage:', error);
+        console.error('Erro ao carregar dados do usuário:', error);
       }
     };
-    loadUserId();
+    loadUserIdAndData();
     fetchPosts();
 
     // Pedir permissão para acessar a galeria de imagens
@@ -217,9 +226,8 @@ const HomeScreen = ({ navigation }) => {
   const handleLogout = () => {
     Alert.alert('Sair', 'Deseja realmente sair?', [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', onPress: async () => {
-        await signOut();
-      }}
+      { text: 'Sair', onPress: signOut(),
+      }
     ]);
   };
 
@@ -266,6 +274,8 @@ const HomeScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileButton}>
             <Ionicons name="person-circle-outline" size={30} color="#007bff" />
           </TouchableOpacity>
+          {/* Só renderiza se user existir */}
+          {user && <Text style={styles.username}>Olá, {user.username}</Text>}
           <Button title="Sair" onPress={handleLogout} />
         </View>
       </View>

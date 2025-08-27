@@ -7,7 +7,7 @@ import axios from 'axios';
 // 'localhost' não funcionará. Você precisará usar o IP da sua máquina.
 // Ex: http://192.168.1.XX:3001
 // Para web, 'localhost' funciona.
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://192.168.1.10:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

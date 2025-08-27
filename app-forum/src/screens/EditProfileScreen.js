@@ -76,10 +76,11 @@ const EditProfileScreen = ({ route, navigation }) => {
         // Correção aqui:
         // Use o Platform.OS para adaptar o URI e o nome do arquivo para web e nativo
         const imageFile = {
-            uri: Platform.OS === 'android' ? selectedImageUri : selectedImageUri.replace('file://', ''),
-            name: Platform.OS === 'android' ? filename : `${initialUser.id}_${Date.now()}.${match ? match[1] : 'jpg'}`, // Garante nome de arquivo para web/iOS
+            uri: Platform.OS === 'OS' ? selectedImageUri : selectedImageUri.replace('file://', ''),
+            name: Platform.OS === 'OS' ? filename : `${initialUser.id}_${Date.now()}.${match ? match[1] : 'jpg'}`, // Garante nome de arquivo para web/iOS
             type: type,
         };
+        console.log('Imagem para upload:', imageFile);
 
         formData.append('profilePicture', imageFile); // 'profilePicture' deve corresponder ao nome do campo no Multer
 

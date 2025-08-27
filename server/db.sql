@@ -1,4 +1,4 @@
-CREATE DATABAE forum_db;
+CREATE DATABASE forum_db;
 USE forum_db;
 
 CREATE TABLE users(
@@ -14,7 +14,7 @@ CREATE TABLE posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL, 
     title VARCHAR(255) NOT NULL, 
-    content NOT NULL, 
+    content TEXT NOT NULL, 
     image_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
