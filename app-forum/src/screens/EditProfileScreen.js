@@ -67,22 +67,23 @@ const EditProfileScreen = ({ route, navigation }) => {
 
       let finalProfilePictureUrl = profilePictureUrl;
       if (selectedImageUri) {
-        // Se uma nova imagem foi selecionada, faça o upload primeiro
         const formData = new FormData();
-        const filename = selectedImageUri.split('/').pop(); // Extrai o nome do arquivo da URI
-        const match = /\.(\w+)$/.exec(filename); // Pega a extensão
-        const type = match ? `image/${match[1]}` : 'image'; // Tenta inferir o tipo MIME
+        const filename = selectedImageUri.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-        // Correção aqui:
-        // Use o Platform.OS para adaptar o URI e o nome do arquivo para web e nativo
-        const imageFile = {
-            uri: Platform.OS === 'OS' ? selectedImageUri : selectedImageUri.replace('file://', ''),
-            name: Platform.OS === 'OS' ? filename : `${initialUser.id}_${Date.now()}.${match ? match[1] : 'jpg'}`, // Garante nome de arquivo para web/iOS
+        if (Platform.OS === 'web') {
+          const response = await fetch(selectedImageUri);
+          const blob = await response.blob();
+          const file = new File([blob], filename, { type });
+          formData.append('profilePicture', file);
+        } else {
+          formData.append('profilePicture', {
+            uri: selectedImageUri,
+            name: filename,
             type: type,
-        };
-        console.log('Imagem para upload:', imageFile);
-
-        formData.append('profilePicture', imageFile); // 'profilePicture' deve corresponder ao nome do campo no Multer
+          });
+        }
 
         try {
           const uploadResponse = await api.post('/upload/profile-picture', formData, {
@@ -115,7 +116,7 @@ const EditProfileScreen = ({ route, navigation }) => {
         Object.entries(updateData).filter(([, value]) => value !== undefined)
       );
 
-      if (Object.keys(filteredUpdateData).length === 0 && !selectedImageUri) { // Adicionado !selectedImageUri
+      if (Object.keys(filteredUpdateData).length === 0 && !selectedImageUri) {
         Alert.alert('Aviso', 'Nenhuma alteração detectada para salvar.');
         setIsSubmitting(false);
         return;
@@ -200,20 +201,20 @@ const EditProfileScreen = ({ route, navigation }) => {
           secureTextEntry
         />
 
-        <Button
-          title={isSubmitting ? "Salvando..." : "Salvar Alterações"}
-          onPress={handleUpdateProfile}
-          disabled={isSubmitting}
-        />
+        <TouchableOpacity onPress={handleUpdateProfile} disabled={isSubmitting} style={{ width: '100%', marginTop: 10 }}>
+          <View style={{ backgroundColor: isSubmitting ? '#ccc' : '#4EA12C', padding: 15, borderRadius: 8, alignItems: 'center' }}>
+            <Text style={{ color: '#fff', fontSize: 16 }}>{isSubmitting ? "Salvando..." : "Salvar Alterações"}</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#E1FAD8',
   },
   header: {
     flexDirection: 'row',
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: '#007bff',
+    borderColor: '#8CEB66',
   },
   profilePicturePlaceholder: {
     width: 120,

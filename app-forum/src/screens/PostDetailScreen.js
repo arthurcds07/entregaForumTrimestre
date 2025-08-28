@@ -95,7 +95,7 @@ const PostDetailScreen = ({ route, navigation }) => {
     <View style={styles.commentCard}>
       <View style={styles.commentHeader}>
         {item.profile_picture_url ? (
-          <Image source={{ uri: `http://localhost:3001${item.profile_picture_url}` }} style={styles.commentProfilePicture} />
+          <Image source={{ uri: `http://192.168.1.10:3001${item.profile_picture_url}` }} style={styles.commentProfilePicture} />
         ) : (
           <Ionicons name="person-circle" size={30} color="#ccc" style={styles.commentProfilePicturePlaceholder} />
         )}
@@ -123,7 +123,7 @@ const PostDetailScreen = ({ route, navigation }) => {
         <View style={styles.postDetailCard}>
           <View style={styles.postHeader}>
             {post.profile_picture_url ? (
-              <Image source={{ uri: `http://localhost:3001${post.profile_picture_url}` }} style={styles.profilePicture} />
+              <Image source={{ uri: `http://192.168.1.10:3001${post.profile_picture_url}` }} style={styles.profilePicture} />
             ) : (
               <Ionicons name="person-circle" size={40} color="#ccc" style={styles.profilePicturePlaceholder} />
             )}
@@ -131,7 +131,7 @@ const PostDetailScreen = ({ route, navigation }) => {
           </View>
           <Text style={styles.postTitle}>{post.title}</Text>
           <Text style={styles.postContent}>{post.content}</Text>
-          {post.image_url && <Image source={{ uri: `http://localhost:3001${post.image_url}` }} style={styles.postImage} />}
+          {post.image_url && <Image source={{ uri: `http://192.168.1.10:3001${post.image_url}` }} style={styles.postImage} />}
           <View style={styles.postStatsContainer}>
             <Text style={styles.postStats}>{post.likes_count} Curtidas</Text>
             <Text style={styles.postStats}>{post.comments_count} Comentários</Text>
@@ -157,11 +157,11 @@ const PostDetailScreen = ({ route, navigation }) => {
             onChangeText={setNewCommentContent}
             multiline
           />
-          <Button
-            title={isSubmittingComment ? "Enviando..." : "Comentar"}
-            onPress={handleCreateComment}
-            disabled={isSubmittingComment}
-          />
+                  <TouchableOpacity onPress={handleCreateComment} style={{ width: '100%', marginTop: 10 }}>
+                    <View style={{ backgroundColor: '#4EA12C', padding: 15, borderRadius: 8, alignItems: 'center' }}>
+                      <Text style={{ color: '#fff', fontSize: 16 }}> Comentar </Text>
+                    </View>
+                  </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -172,7 +172,7 @@ const PostDetailScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#E1FAD8',
   },
   loadingContainer: {
     flex: 1,

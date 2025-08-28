@@ -169,7 +169,7 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#E1FAD8',
   },
   loadingContainer: {
     flex: 1,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#E1FAD8',
     paddingTop: 40,
   },
   backButton: {
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 15,
     borderWidth: 2,
-    borderColor: '#007bff',
+    borderColor: '#8CEB66',
   },
   profilePicturePlaceholder: {
     marginBottom: 15,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: '#007bff',
+    borderBottomColor: '#8CEB66',
   },
   tabText: {
     fontSize: 16,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   activeTabText: {
-    color: '#007bff',
+    color: '#4EA12C',
   },
   postListContent: {
     paddingHorizontal: 15,

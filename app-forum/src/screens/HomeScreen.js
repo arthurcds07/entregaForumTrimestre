@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
   View, Text, Button, StyleSheet, Alert,
-  FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image
+  FlatList, TextInput, TouchableOpacity, ActivityIndicator, Image, Modal, ScrollView
 } from 'react-native';
 import AuthContext from '../context/AuthContext';
 import api from '../services/api';
@@ -23,7 +23,10 @@ const HomeScreen = ({ navigation }) => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [newPostImageUri, setNewPostImageUri] = useState(null); // <-- Novo: URI da imagem do novo post
   const [user, setUser] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
+
+  
   useEffect(() => {
     const loadUserIdAndData = async () => {
       try {
@@ -235,7 +238,7 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.postCard}>
       <View style={styles.postHeader}>
         {item.profile_picture_url ? (
-          <Image source={{ uri: `http://localhost:3001${item.profile_picture_url}` }} style={styles.profilePicture} />
+        <Image source={{ uri: `http://192.168.1.10:3001${item.profile_picture_url}` }} style={styles.profilePicture} />
         ) : (
           <Ionicons name="person-circle" size={40} color="#ccc" style={styles.profilePicturePlaceholder} />
         )}
@@ -243,7 +246,7 @@ const HomeScreen = ({ navigation }) => {
       </View>
       <Text style={styles.postTitle}>{item.title}</Text>
       <Text style={styles.postContent}>{item.content}</Text>
-      {item.image_url && <Image source={{ uri: `http://localhost:3001${item.image_url}` }} style={styles.postImage} />}
+      {item.image_url && <Image source={{ uri: `http://192.168.1.10:3001${item.image_url}` }} style={styles.postImage} />}
       <View style={styles.postFooter}>
         <TouchableOpacity style={styles.interactionButton} onPress={() => handleToggleLike(item.id)}>
           <Ionicons
@@ -266,64 +269,44 @@ const HomeScreen = ({ navigation }) => {
     </View>
   );
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.mainTitle}>Fórum do App</Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileButton}>
+return (
+  <View style={styles.container}>
+    {/* Header */}
+    <View style={styles.header}>
+      <View style={styles.headerButtons}>
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileButton}>
+          {user?.profile_picture_url ? (
+            <Image
+              source={{ uri: `http://192.168.1.10:3001${user.profile_picture_url}` }}
+              style={styles.headerProfilePicture}
+            />
+          ) : (
             <Ionicons name="person-circle-outline" size={30} color="#007bff" />
-          </TouchableOpacity>
-          {/* Só renderiza se user existir */}
-          {user && <Text style={styles.username}>Olá, {user.username}</Text>}
-          <Button title="Sair" onPress={handleLogout} />
-        </View>
-      </View>
-
-      {/* Barra de Pesquisa */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Pesquisar posts por título ou conteúdo..."
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          onSubmitEditing={fetchPosts}
-        />
-        <TouchableOpacity onPress={fetchPosts} style={styles.searchButton}>
-          <Ionicons name="search" size={24} color="#fff" />
+          )}
+        </TouchableOpacity>
+        {user && <Text style={styles.username}>Olá, {user.username}</Text>}
+        <TouchableOpacity onPress={handleLogout} style={styles.logOutButton}>
+          <Text style={styles.logOutButtonText}>Sair</Text>
         </TouchableOpacity>
       </View>
+    </View>
 
-      {/* Seção para criar novo post */}
-      <View style={styles.createPostContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Título do seu post"
-          value={newPostTitle}
-          onChangeText={setNewPostTitle}
-        />
-        <TextInput
-          style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
-          placeholder="O que você quer compartilhar?"
-          value={newPostContent}
-          onChangeText={setNewPostContent}
-          multiline
-        />
-        <TouchableOpacity onPress={pickPostImage} style={styles.imagePickerButton}>
-          <Ionicons name="image-outline" size={24} color="#007bff" />
-          <Text style={styles.imagePickerButtonText}>Adicionar Imagem</Text>
-        </TouchableOpacity>
-        {newPostImageUri && (
-          <Image source={{ uri: newPostImageUri }} style={styles.previewImage} />
-        )}
-        <Button
-          title={isSubmitting ? "Publicando..." : "Criar Post"}
-          onPress={handleCreatePost}
-          disabled={isSubmitting}
-        />
-      </View>
+    {/* Barra de pesquisa */}
+    <View style={styles.searchContainer}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Pesquisar posts por título ou conteúdo..."
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+        onSubmitEditing={fetchPosts}
+      />
+      <TouchableOpacity onPress={fetchPosts} style={styles.searchButton}>
+        <Ionicons name="search" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
 
-      {/* Lista de Posts */}
+    {/* Lista de posts */}
+    <View style={{ flex: 1 }}>
       {loadingPosts ? (
         <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
       ) : (
@@ -332,17 +315,67 @@ const HomeScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderPostItem}
           contentContainerStyle={styles.postList}
-          ListEmptyComponent={<Text style={styles.noPostsText}>Nenhum post encontrado. Tente ajustar sua pesquisa ou seja o primeiro a postar!</Text>}
+          ListEmptyComponent={
+            <Text style={styles.noPostsText}>
+              Nenhum post encontrado. Tente ajustar sua pesquisa ou seja o primeiro a postar!
+            </Text>
+          }
         />
       )}
     </View>
-  );
+
+    {/* Botão flutuante */}
+    <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+      <Ionicons name="add" size={28} color="white" />
+    </TouchableOpacity>
+
+    {/* Modal de criar post */}
+    <Modal
+      visible={modalVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalBackground}>
+        <View style={styles.modalContent}>
+          <ScrollView>
+            <Text style={styles.modalTitle}>Criar Post</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Título"
+              value={newPostTitle}
+              onChangeText={setNewPostTitle}
+            />
+            <TextInput
+              style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+              placeholder="Conteúdo"
+              value={newPostContent}
+              onChangeText={setNewPostContent}
+              multiline
+            />
+            <TouchableOpacity style={styles.imagePickerButton} onPress={pickPostImage}>
+              <Ionicons name="image-outline" size={24} color="#007bff" />
+              <Text style={styles.imagePickerButtonText}>Adicionar Imagem</Text>
+            </TouchableOpacity>
+            {newPostImageUri && <Image source={{ uri: newPostImageUri }} style={styles.previewImage} />}
+            <Button
+              title={isSubmitting ? "Publicando..." : "Publicar"}
+              onPress={handleCreatePost}
+              disabled={isSubmitting}
+            />
+            <Button title="Cancelar" color="red" onPress={() => setModalVisible(false)} />
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  </View>
+);
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#E1FAD8', // fundo suave
     paddingTop: 40,
   },
   header: {
@@ -352,17 +385,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    backgroundColor: '#fff',
+    borderBottomColor: '#9FD986',
+    backgroundColor: '#E1FAD8', // header verde médio
   },
-  mainTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#333',
+  headerProfilePicture: {
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
+    borderWidth: 1,
+    borderColor: '#8CEB66',
   },
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  logOutButton: {
+    marginLeft: 160,
+    backgroundColor: '#28680E',
+    marginTop: 15,
+    borderRadius: 5,
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  logOutButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   profileButton: {
     marginRight: 15,
@@ -370,7 +418,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     margin: 15,
     paddingHorizontal: 10,
@@ -384,59 +432,19 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     fontSize: 16,
+    color: '#28680E',
   },
   searchButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#8CEB66',
     padding: 8,
     borderRadius: 5,
-  },
-  createPostContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginHorizontal: 15,
-    marginBottom: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: '#f9f9f9',
-  },
-  imagePickerButton: { // Novo estilo
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e9f5ff',
-    padding: 10,
-    borderRadius: 5,
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  imagePickerButtonText: { // Novo estilo
-    marginLeft: 10,
-    color: '#007bff',
-    fontWeight: 'bold',
-  },
-  previewImage: { // Novo estilo
-    width: '100%',
-    height: 150,
-    borderRadius: 8,
-    resizeMode: 'cover',
-    marginBottom: 10,
   },
   postList: {
     paddingHorizontal: 15,
     paddingBottom: 20,
   },
   postCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
@@ -457,24 +465,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
   },
-  profilePicturePlaceholder: {
-    marginRight: 10,
+  username: {
+    fontSize: 16, 
+    fontWeight: 'bold',
+    color: '#28680E',
   },
   postUsername: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: '#555',
+    color: '#fffff',
   },
   postTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#333',
+    color: '#28680E',
   },
   postContent: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: '#000',
     marginBottom: 10,
   },
   postImage: {
@@ -490,7 +500,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#9FD986',
   },
   interactionButton: {
     flexDirection: 'row',
@@ -500,14 +510,79 @@ const styles = StyleSheet.create({
   interactionText: {
     marginLeft: 5,
     fontSize: 14,
-    color: '#666',
+    color: '#4EA12C',
   },
   noPostsText: {
     textAlign: 'center',
     marginTop: 50,
     fontSize: 16,
-    color: '#777',
-  }
+    color: '#28680E',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 25,
+    right: 25,
+    backgroundColor: '#8CEB66',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(40,104,14,0.6)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: '#E1FAD8',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#28680E',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#9FD986',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    color: '#28680E',
+  },
+  imagePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8CEB66',
+    padding: 10,
+    borderRadius: 5,
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  imagePickerButtonText: {
+    marginLeft: 10,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  previewImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
+    resizeMode: 'cover',
+    marginBottom: 10,
+  },
 });
+
 
 export default HomeScreen;
